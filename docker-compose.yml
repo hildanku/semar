@@ -17,12 +17,12 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_SCHEMA: ${DB_SCHEMA}
     depends_on:
-      psql_bp:
+      postgres:
         condition: service_healthy
     networks:
-      - blueprint
-  psql_bp:
-    image: postgres:latest
+      - semarsiem
+  postgres:
+    image: postgres:18.0-alpine3.22
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_DATABASE}
@@ -31,17 +31,17 @@ services:
     ports:
       - "${DB_PORT}:5432"
     volumes:
-      - psql_volume_bp:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}')"]
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}'"]
       interval: 5s
       timeout: 5s
       retries: 3
       start_period: 15s
     networks:
-      - blueprint
+      - semarsiem
 
 volumes:
-  psql_volume_bp:
+  postgres_data:
 networks:
-  blueprint:
+  semarsiem:
