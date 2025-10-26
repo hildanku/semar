@@ -6,10 +6,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"semar-siem/internal/server"
 	"strconv"
 	"syscall"
 	"time"
+
+	"semar-siem/internal/module/collector"
+	"semar-siem/internal/server"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -40,11 +42,18 @@ func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 }
 
 func main() {
-
 	server := server.New()
 
 	server.RegisterFiberRoutes()
 
+	cfg := collector.CollectorConfig{
+		LogFilePath:  "/var/log/syslog",
+		PollInterval: 10 * time.Second,
+	}
+
+	c := collector.NewCollector(cfg)
+
+	go c.Start()
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan bool, 1)
 
